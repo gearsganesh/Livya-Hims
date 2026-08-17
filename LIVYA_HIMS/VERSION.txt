@@ -1,0 +1,5 @@
+LIVYA HIMS V8.2.6
+Final pre-deployment audited build
+Frontend: Netlify/static
+Backend: Supabase Edge Function hims-api
+Database: Existing Supabase HIMS schema
