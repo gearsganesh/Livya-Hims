@@ -1,0 +1,8 @@
+# Supabase project configuration for LIVYA HIMS.
+# The production project is linked from the Supabase dashboard, so the
+# project reference is intentionally not hard-coded here.
+
+[functions.hims-api]
+# The Edge Function performs its own authorization using the Supabase
+# access token. Keep gateway JWT verification enabled.
+verify_jwt = true
