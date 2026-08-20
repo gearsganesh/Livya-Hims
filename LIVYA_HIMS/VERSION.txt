@@ -1,5 +1,5 @@
-LIVYA HIMS V8.2.6
-Final pre-deployment audited build
+LIVYA HIMS V8.2.7 + GIMS
+GIMS stores/procurement/inventory module integrated into the HIMS frontend.
 Frontend: Netlify/static
 Backend: Supabase Edge Function hims-api
-Database: Existing Supabase HIMS schema
+Database: Existing Supabase HIMS + GIMS schema
