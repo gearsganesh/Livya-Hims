@@ -124,6 +124,7 @@ document.title = 'LIVYA HIMS · V8.3.1 + Stores';
   function start(){
     addUiStyles();
     moveUserbox();
+    load('pharmacy-fix.js',false);
     loadStoresAfterLogin();
     if(document.body){
       const observer=new MutationObserver(()=>{
