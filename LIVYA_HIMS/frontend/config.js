@@ -1,4 +1,4 @@
-// LIVYA HIMS V8.3.0 + GIMS frontend configuration.
+// LIVYA HIMS V8.3.1 + Stores frontend configuration.
 const LIVYA_CONFIG = {
   SUPABASE_URL: 'https://weqghrrvgunfpsvtrlkw.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV',
@@ -6,22 +6,22 @@ const LIVYA_CONFIG = {
   ADMIN_EMAILS: ['gearsganesh@gmail.com']
 };
 window.LIVYA_CONFIG = LIVYA_CONFIG;
-document.title = 'LIVYA HIMS · V8.3.0 + GIMS';
+document.title = 'LIVYA HIMS · V8.3.1 + Stores';
 
 (function(){
   function load(path,css,onload){
     const e=document.createElement(css?'link':'script');
-    if(css){e.rel='stylesheet';e.href=path+'?v=8.3.0'}
-    else{e.src=path+'?v=8.3.0';e.defer=true}
+    if(css){e.rel='stylesheet';e.href=path+'?v=8.3.1'}
+    else{e.src=path+'?v=8.3.1';e.defer=true}
     if(onload)e.onload=onload;
     e.onerror=()=>console.error('LIVYA resource failed to load:',path);
     document.head.appendChild(e);
     return e;
   }
 
-  /* Keep the HIMS login session available to the GIMS client as well.
-     The previous setup created the main HIMS client with persistSession:false,
-     while GIMS uses a separate Supabase client. */
+  /* Keep the HIMS login session available to the Stores client as well.
+     The main HIMS client uses a non-persistent session, while Stores uses
+     a separate Supabase client. */
   if(window.supabase?.createClient && !window.__LIVYA_CREATE_CLIENT_PATCHED){
     const originalCreateClient=window.supabase.createClient.bind(window.supabase);
     window.supabase.createClient=function(url,key,opts){
@@ -65,6 +65,15 @@ document.title = 'LIVYA HIMS · V8.3.0 + GIMS';
       .top .top-userbox .userline{margin:0!important;gap:8px;align-items:center}
       .top .top-userbox .avatar.sm{width:34px;height:34px}
       .top .top-userbox #logout{width:auto!important;min-width:82px;padding:8px 12px}
+
+      /* Public module name: GIMS is the internal technical name; the UI is Stores. */
+      #gimsNavBtn{font-size:0!important}
+      #gimsNavBtn::after{content:'▦  Stores';font-size:16px}
+      #gimsPage .titlebar h2{font-size:0!important}
+      #gimsPage .titlebar h2::after{content:'Stores · General Inventory & Stores';font-size:26px}
+      .gims-modal h3{font-size:0!important}
+      .gims-modal h3::after{content:'Stores';font-size:22px}
+
       @media(max-width:700px){
         .top .top-userbox{margin-left:8px!important;gap:6px}
         .top .top-userbox .userline>div{display:none}
@@ -83,14 +92,14 @@ document.title = 'LIVYA HIMS · V8.3.0 + GIMS';
     const b=document.createElement('button');
     b.id='gimsNavBtn';
     b.type='button';
-    b.textContent='▦  GIMS';
-    b.title='General Inventory & Stores';
+    b.textContent='▦  Stores';
+    b.title='Stores · General Inventory & Stores';
     b.onclick=()=>{
       if(window.GIMS?.open){
         try{window.GIMS.open();}
-        catch(err){console.error('GIMS open failed:',err);alert('GIMS could not be opened. Check the browser console for details.');}
+        catch(err){console.error('Stores open failed:',err);alert('Stores could not be opened. Check the browser console for details.');}
       }else{
-        alert('GIMS is still loading. Please wait a moment and try again.');
+        alert('Stores is still loading. Please wait a moment and try again.');
       }
     };
     n.appendChild(b);
