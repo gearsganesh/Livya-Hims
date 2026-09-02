@@ -1,78 +1,53 @@
-# LIVYA HIMS V8.2.6 - Final Audited Package
-
-This package is the final pre-deployment build reviewed against the agreed LIVYA HIMS workflow.
+# LIVYA HIMS V8.3.4 - Deployment Package
 
 ## Architecture
-- Frontend: Netlify/static frontend
-- Authentication: Supabase Auth email OTP
-- Backend: Supabase Edge Function `hims-api`
-- Database: existing Supabase HIMS schema
-- Storage: Supabase Storage bucket `livya-hims-documents`
+- Frontend: Netlify/static frontend mapped to `hims.livyacurehub.com`
+- Authentication: Supabase Auth email OTP for HIMS
+- HIMS backend: Supabase Edge Function `hims-api`
+- Metabolic backend: Supabase Edge Function `metabolic-api`
+- Database: single HIMS Supabase project `weqghrrvgunfpsvtrlkw`
+- HIMS `patients` and `users` are the shared identity masters
+- Metabolic domain data remains in `metabolic_*` tables
+- Metabolic files use private Supabase Storage bucket `metabolic-files`
 
-## Important
-1. Do NOT run any reset SQL.
-2. Do NOT rerun the bulk patient backload merely to fix frontend/backend errors.
-3. No database-destructive migration is included in this package.
-4. The frontend does NOT persist the Supabase login session. Opening or refreshing the HIMS URL returns to the login screen.
-5. The Supabase service-role key must exist only in the Edge Function secrets. It is not included in the frontend.
+## Metabolic integration
+The HIMS dashboard embeds Metabolic Reset without a second login. The active HIMS Supabase session is pre-seeded into the Metabolic iframe before it boots and is synchronized again after load. HIMS logout clears the Metabolic session as well.
 
-## Deploy frontend
-Deploy the contents of `frontend/` to the Netlify site currently mapped to `hims.livyacurehub.com`.
+Metabolic Reset frontend and `metabolic-api` are synchronized from the `gearsganesh/livyametabolicreset` source repository. The synchronization workflow does not use `[skip ci]`, so the generated HIMS frontend can deploy normally through Netlify.
 
-The frontend contains the current:
-- Login / OTP flow
-- Dashboard
-- Patients
-- Appointments
-- Active Visits / Case Sheets
-- Common Vitals
-- Shared Visit Prescription
-- Screening / Investigations
-- Physiotherapy case sheet
-- Nutrition case sheet
-- True IV SOP and Nirmal approval workflow
-- Reports / patient files
-- Billing / checkout / payment collection
-- Pharmacy integration and pharmacy workspace
-- Consent form launchers
-- Administration / user management
-- Profile photographs
-- Consolidated visit print / PDF
+The live HIMS Supabase project contains the production reconciliation for Metabolic messaging, read receipts, RBAC, storage RLS, realtime publication, HIMS identity links, client-auth auto-linking and the HIMS Metabolic patient summary view.
 
-## Deploy backend
-Deploy:
-`supabase/functions/hims-api/index.ts`
+## Security rules
+1. Never expose a Supabase secret/service-role key in frontend files.
+2. Do not reset the HIMS database.
+3. Do not rerun bulk patient backload SQL.
+4. Metabolic staff access is controlled by `metabolic_staff_permissions`; ADMIN accounts retain full access.
+5. Metabolic client data is restricted by `client_user_id` and RLS.
+6. The legacy Metabolic Supabase project is retired from production routing.
 
-Required Edge Function secrets:
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-Do not paste the service-role key into `frontend/config.js`.
+## HIMS login session
+A successful HIMS OTP login is remembered by the browser for 3 hours. Refreshing/reopening within that window restores the active session. Explicit Logout clears the remembered marker and requires OTP again. The 3-hour rule is an application-level remembered-login policy; it does not turn an email address into a password.
 
 ## First test after deployment
-Use an authorised HIMS user and test in this order:
-1. Open HIMS URL in a fresh/private browser window.
-2. Confirm the login page appears without an automatic login.
-3. Enter the authorised email.
-4. Request OTP.
-5. Verify OTP.
-6. Dashboard loads.
-7. Patients loads and search works.
-8. Appointments loads.
-9. Check-in one test appointment.
-10. Active Visits opens the visit.
-11. Open the case sheet.
-12. Save vitals.
-13. Save the relevant clinical case sheet.
-14. Add prescription/investigation if applicable.
-15. Test billing only after the consultation workflow is complete.
-16. If True IV is used, submit the SOP and verify that billing is blocked until Nirmal approval.
-17. Test Pharmacy only with a controlled test prescription.
-18. Test Reports / patient files.
-19. Test Administration and run `System Mapping Check` as ADMIN.
+1. Open `hims.livyacurehub.com` in a fresh browser.
+2. Complete HIMS OTP login.
+3. Refresh HIMS and confirm it remains logged in within 3 hours.
+4. Click **Metabolic Reset** from the dashboard.
+5. Confirm Metabolic Reset opens directly without another login screen.
+6. Confirm Metabolic dashboard/client data loads.
+7. Open HIMS logout and confirm both HIMS and Metabolic access are cleared.
+8. Log in again with OTP.
+9. Test Metabolic staff directory and permissions as ADMIN.
+10. Test a controlled report/check-in/note save and confirm the row reaches the HIMS Supabase project.
+11. Test messaging and read receipts.
+12. Test a private metabolic file upload/download.
+13. Test a HIMS patient against `hims_metabolic_patient_summary` to confirm the identity bridge.
 
-## Database check
-`sql/01_READONLY_SCHEMA_CHECK.sql` is read-only. Run it in Supabase SQL Editor if you want to verify the required tables/columns before production use.
+## Backend deployment
+HIMS:
+`supabase/functions/hims-api/index.ts`
 
-## Patient backload
-The previous patient backload SQL is intentionally NOT part of the deployment package. The bulk import should not be rerun as a remedy for application errors.
+Metabolic:
+`supabase/functions/metabolic-api/index.ts`
+
+Both functions must remain JWT protected. Server-only Supabase secrets belong only in Edge Function secrets.
