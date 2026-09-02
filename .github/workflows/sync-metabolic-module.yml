@@ -1,0 +1,67 @@
+name: Sync Metabolic Reset module
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout HIMS
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Metabolic Reset
+        uses: actions/checkout@v4
+        with:
+          repository: gearsganesh/livyametabolicreset
+          path: .metabolic-source
+          fetch-depth: 1
+
+      - name: Vendor runtime module
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf LIVYA_HIMS/frontend/metabolic
+          mkdir -p LIVYA_HIMS/frontend/metabolic
+          cp .metabolic-source/index.html LIVYA_HIMS/frontend/metabolic/index.html
+          cp .metabolic-source/admin-access.js LIVYA_HIMS/frontend/metabolic/admin-access.js
+          cp .metabolic-source/production-files-persistence.js LIVYA_HIMS/frontend/metabolic/production-files-persistence.js
+          cp .metabolic-source/production-hardening.js LIVYA_HIMS/frontend/metabolic/production-hardening.js
+          cp .metabolic-source/production-message-receipts.js LIVYA_HIMS/frontend/metabolic/production-message-receipts.js
+          cp .metabolic-source/production-runtime.js LIVYA_HIMS/frontend/metabolic/production-runtime.js
+          cp .metabolic-source/supabase-bridge.js LIVYA_HIMS/frontend/metabolic/supabase-bridge.js
+          cp .metabolic-source/supabase-messages.js LIVYA_HIMS/frontend/metabolic/supabase-messages.js
+          cp .metabolic-source/supabase-persistence.js LIVYA_HIMS/frontend/metabolic/supabase-persistence.js
+          cp .metabolic-source/supabase-storage.js LIVYA_HIMS/frontend/metabolic/supabase-storage.js
+          cp .metabolic-source/supabase-config.js LIVYA_HIMS/frontend/metabolic/supabase-config.js
+          # Use the HIMS Supabase project at runtime. Keep the source app's UX intact.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('LIVYA_HIMS/frontend/metabolic/supabase-config.js')
+          s=p.read_text()
+          s=s.replace("https://khtwrprihdkbpllxqlmh.supabase.co", "https://weqghrrvgunfpsvtrlkw.supabase.co")
+          s=s.replace("sb_publishable_H0-yQ7PV-Xqohz-nKFWIYA_bGew0c5q", "sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV")
+          p.write_text(s)
+          PY
+          rm -rf .metabolic-source
+
+      - name: Commit vendored module
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add LIVYA_HIMS/frontend/metabolic
+          if git diff --cached --quiet; then
+            echo "No Metabolic module changes."
+            exit 0
+          fi
+          git commit -m "chore: sync Metabolic Reset module [skip ci]"
+          git push
