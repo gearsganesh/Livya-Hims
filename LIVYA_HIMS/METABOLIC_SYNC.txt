@@ -2,3 +2,4 @@ Metabolic Reset source is synchronized into HIMS.
 Frontend: vendored from gearsganesh/livyametabolicreset main.
 Backend: metabolic-api index.ts + deno.json are vendored for deployment.
 Database: production reconciliation migrations are deployed in Supabase project weqghrrvgunfpsvtrlkw.
+Scheduled synchronization: hourly, plus manual and HIMS push triggers.
