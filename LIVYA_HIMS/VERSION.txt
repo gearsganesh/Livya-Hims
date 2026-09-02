@@ -1,6 +1,7 @@
-LIVYA HIMS V8.2.8 + GIMS + Metabolic Reset
+LIVYA HIMS V8.3.2 + GIMS + Metabolic Reset
 GIMS stores/procurement/inventory module integrated into the HIMS frontend.
 Metabolic Reset integrated into the same Supabase project with HIMS master identity links.
+Metabolic Reset runtime is vendored into the HIMS frontend for Netlify deployment.
 Frontend: Netlify/static
 Backend: Supabase Edge Function hims-api + metabolic domain tables
 Database: Existing Supabase HIMS + GIMS + Metabolic schema
