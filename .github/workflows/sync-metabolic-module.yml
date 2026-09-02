@@ -1,13 +1,10 @@
 name: Sync Metabolic Reset module
-
 on:
   workflow_dispatch:
   push:
     branches: [main]
-
 permissions:
   contents: write
-
 jobs:
   sync:
     if: github.actor != 'github-actions[bot]'
@@ -15,16 +12,13 @@ jobs:
     steps:
       - name: Checkout HIMS
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
+        with: { fetch-depth: 0 }
       - name: Checkout Metabolic Reset
         uses: actions/checkout@v4
         with:
           repository: gearsganesh/livyametabolicreset
           path: .metabolic-source
           fetch-depth: 1
-
       - name: Vendor frontend and backend
         shell: bash
         run: |
@@ -32,30 +26,26 @@ jobs:
           rm -rf LIVYA_HIMS/frontend/metabolic
           mkdir -p LIVYA_HIMS/frontend/metabolic
           cp .metabolic-source/index.html LIVYA_HIMS/frontend/metabolic/index.html
-          for f in admin-access.js production-files-persistence.js production-hardening.js production-message-receipts.js production-runtime.js supabase-bridge.js supabase-messages.js supabase-persistence.js supabase-storage.js supabase-config.js; do
-            cp ".metabolic-source/$f" "LIVYA_HIMS/frontend/metabolic/$f"
-          done
+          for f in admin-access.js production-files-persistence.js production-hardening.js production-message-receipts.js production-runtime.js supabase-bridge.js supabase-messages.js supabase-persistence.js supabase-storage.js supabase-config.js; do cp ".metabolic-source/$f" "LIVYA_HIMS/frontend/metabolic/$f"; done
           mkdir -p LIVYA_HIMS/supabase/functions/metabolic-api
           cp .metabolic-source/supabase/functions/metabolic-api/index.ts LIVYA_HIMS/supabase/functions/metabolic-api/index.ts
-          # The HIMS project is the single production Supabase backend.
+          cp .metabolic-source/supabase/functions/metabolic-api/deno.json LIVYA_HIMS/supabase/functions/metabolic-api/deno.json
           python3 - <<'PY'
           from pathlib import Path
           p=Path('LIVYA_HIMS/frontend/metabolic/supabase-config.js')
-          s=p.read_text()
-          s=s.replace('https://khtwrprihdkbpllxqlmh.supabase.co','https://weqghrrvgunfpsvtrlkw.supabase.co')
-          s=s.replace('sb_publishable_H0-yQ7PV-Xqohz-nKFWIYA_bGew0c5q','sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV')
+          s=p.read_text().replace('https://khtwrprihdkbpllxqlmh.supabase.co','https://weqghrrvgunfpsvtrlkw.supabase.co').replace('sb_publishable_H0-yQ7PV-Xqohz-nKFWIYA_bGew0c5q','sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV')
           p.write_text(s)
           PY
           rm -rf .metabolic-source
-
-      - name: Record source version
+      - name: Record synchronization state
         shell: bash
         run: |
-          printf 'Metabolic Reset source is synchronized into HIMS.\n' > LIVYA_HIMS/METABOLIC_SYNC.txt
-          printf 'Frontend: vendored at deploy time from gearsganesh/livyametabolicreset main.\n' >> LIVYA_HIMS/METABOLIC_SYNC.txt
-          printf 'Backend: supabase/functions/metabolic-api/index.ts is vendored and deployed to HIMS Supabase.\n' >> LIVYA_HIMS/METABOLIC_SYNC.txt
-          printf 'Database: production reconciliation migrations live in HIMS Supabase project weqghrrvgunfpsvtrlkw.\n' >> LIVYA_HIMS/METABOLIC_SYNC.txt
-
+          cat > LIVYA_HIMS/METABOLIC_SYNC.txt <<'EOF'
+          Metabolic Reset source is synchronized into HIMS.
+          Frontend: vendored from gearsganesh/livyametabolicreset main.
+          Backend: metabolic-api index.ts + deno.json are vendored for deployment.
+          Database: production reconciliation migrations are deployed in Supabase project weqghrrvgunfpsvtrlkw.
+          EOF
       - name: Commit synchronized module
         shell: bash
         run: |
@@ -63,9 +53,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add LIVYA_HIMS/frontend/metabolic LIVYA_HIMS/supabase/functions/metabolic-api LIVYA_HIMS/METABOLIC_SYNC.txt
-          if git diff --cached --quiet; then
-            echo 'No Metabolic synchronization changes.'
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo 'No Metabolic synchronization changes.'; exit 0; fi
           git commit -m 'chore: sync Metabolic Reset module'
           git push
