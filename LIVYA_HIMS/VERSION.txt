@@ -1,8 +1,12 @@
-LIVYA HIMS V8.3.3 + GIMS + Metabolic Reset
+LIVYA HIMS V8.3.4 + GIMS + Metabolic Reset
 GIMS stores/procurement/inventory module integrated into the HIMS frontend.
 Metabolic Reset integrated into the same Supabase project with HIMS master identity links.
-Metabolic Reset runtime is vendored into the HIMS frontend for Netlify deployment.
+Metabolic Reset frontend and metabolic-api are synchronized from the source repository.
 HIMS browser login is remembered for 3 hours; explicit Sign out clears the remembered session and requires OTP again.
+Metabolic iframe reuses the active HIMS Supabase session and does not show a second login when opened from HIMS.
+Metabolic RBAC, messaging schema, read receipts, storage RLS and realtime publication are deployed in the HIMS Supabase project.
+HIMS patient-to-Metabolic summary view is available through the shared database using hims_patient_id.
+Legacy Metabolic Supabase project is retired from production routing.
 Frontend: Netlify/static
-Backend: Supabase Edge Function hims-api + metabolic domain tables
+Backend: Supabase Edge Functions hims-api + metabolic-api
 Database: Existing Supabase HIMS + GIMS + Metabolic schema
