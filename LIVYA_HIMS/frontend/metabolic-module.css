@@ -1,0 +1,10 @@
+/* LIVYA Metabolic Reset module chrome. Visual language derived from the Metabolic Reset UI. */
+:root{--met-ground:#FAF8F8;--met-surface:#FFFFFF;--met-surface-2:#F4F0F0;--met-ink:#1B1416;--met-ink-2:#6E5F62;--met-ink-3:#9C8C8F;--met-line:#E7DEDF;--met-brand:#931A1D;--met-brand-2:#B33A38;--met-brand-wash:#FAEFEF}
+#metabolicModuleOverlay{position:fixed;inset:0;z-index:180;background:rgba(27,20,22,.55);backdrop-filter:blur(5px);display:none;align-items:stretch;justify-content:center}
+#metabolicModuleOverlay.show{display:flex}.metabolic-module-frame{position:relative;width:100%;height:100%;background:var(--met-ground);overflow:hidden}
+.metabolic-module-bar{height:46px;background:var(--met-surface);border-bottom:1px solid var(--met-line);display:flex;align-items:center;gap:12px;padding:0 14px;box-shadow:0 1px 0 rgba(27,20,22,.03);position:absolute;left:0;right:0;top:0;z-index:2}
+.metabolic-module-bar::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--met-brand)}
+.metabolic-module-title{font-family:"IBM Plex Sans",Inter,system-ui,sans-serif;font-size:14px;font-weight:600;color:var(--met-ink);margin-left:4px}.metabolic-module-title span{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--met-ink-3);margin-left:8px}
+.metabolic-module-close{margin-left:auto;border:1px solid var(--met-line);background:var(--met-surface);color:var(--met-ink-2);border-radius:9px;padding:6px 12px;font:500 12px "IBM Plex Sans",Inter,sans-serif;cursor:pointer}.metabolic-module-close:hover{border-color:var(--met-ink-3);color:var(--met-ink);background:var(--met-surface-2)}
+#metabolicModuleFrame{position:absolute;inset:46px 0 0;border:0;width:100%;height:calc(100% - 46px);background:var(--met-ground)}#metabolicNavBtn{font-family:"IBM Plex Sans",Inter,system-ui,sans-serif!important}
+#metabolicNavBtn::before{content:"◒";margin-right:8px;color:inherit}@media(max-width:760px){.metabolic-module-title span{display:none}.metabolic-module-bar{height:44px}#metabolicModuleFrame{inset:44px 0 0;height:calc(100% - 44px)}}
