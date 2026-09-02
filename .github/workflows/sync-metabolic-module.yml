@@ -1,13 +1,15 @@
 name: Sync Metabolic Reset module
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
   push:
     branches: [main]
 permissions:
   contents: write
 jobs:
   sync:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout HIMS
@@ -45,6 +47,7 @@ jobs:
           Frontend: vendored from gearsganesh/livyametabolicreset main.
           Backend: metabolic-api index.ts + deno.json are vendored for deployment.
           Database: production reconciliation migrations are deployed in Supabase project weqghrrvgunfpsvtrlkw.
+          Scheduled synchronization: hourly, plus manual and HIMS push triggers.
           EOF
       - name: Commit synchronized module
         shell: bash
