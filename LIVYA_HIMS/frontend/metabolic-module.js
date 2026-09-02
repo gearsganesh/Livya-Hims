@@ -2,6 +2,7 @@
 (function(){
   'use strict';
   const APP_PATH='metabolic/index.html';
+  const SUPABASE_STORAGE_KEY='sb-weqghrrvgunfpsvtrlkw-auth-token';
   let frame,overlay;
 
   async function getHimsSession(){
@@ -18,7 +19,11 @@
   async function seedSession(){
     const s=await getHimsSession();
     if(!s?.access_token || !s?.refresh_token) return null;
-    try{ localStorage.setItem('livya-metabolic-auth',JSON.stringify(s)); }catch(e){}
+    try{
+      const serialized=JSON.stringify(s);
+      localStorage.setItem('livya-metabolic-auth',serialized);
+      localStorage.setItem(SUPABASE_STORAGE_KEY,serialized);
+    }catch(e){}
     return s;
   }
 
@@ -42,7 +47,7 @@
 
   async function clearFrameSession(){
     try{ await frame?.contentWindow?.LIVYA_BACKEND?.client?.auth?.signOut(); }catch(e){}
-    try{ localStorage.removeItem('livya-metabolic-auth'); }catch(e){}
+    try{ localStorage.removeItem('livya-metabolic-auth'); localStorage.removeItem(SUPABASE_STORAGE_KEY); }catch(e){}
   }
 
   function ensure(){
@@ -85,7 +90,7 @@
   }
 
   function start(){
-    const css=document.createElement('link');css.rel='stylesheet';css.href='metabolic-module.css?v=2';document.head.appendChild(css);
+    const css=document.createElement('link');css.rel='stylesheet';css.href='metabolic-module.css?v=3';document.head.appendChild(css);
     const font=document.createElement('link');font.rel='stylesheet';font.href='https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap';document.head.appendChild(font);
     ensure(); bindLogout();
     const observer=new MutationObserver(ensure); if(document.body)observer.observe(document.body,{childList:true,subtree:true});
