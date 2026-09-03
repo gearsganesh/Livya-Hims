@@ -123,6 +123,23 @@ jobs:
           diff -u /tmp/expected_backend /tmp/actual_backend
           ! grep -R -n -E 'khtwrprihdkbpllxqlmh|H0-yQ7PV-Xqohz-nKFWIYA_bGew0c5q' LIVYA_HIMS/frontend/metabolic LIVYA_HIMS/supabase/functions/metabolic-api || true
 
+      - name: Validate synchronized JavaScript and manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check LIVYA_HIMS/frontend/metabolic/hims-session-bridge.js
+          node --check LIVYA_HIMS/frontend/metabolic/hims-clinical-dashboard.js
+          node --check LIVYA_HIMS/frontend/metabolic/supabase-bridge.js
+          node --check LIVYA_HIMS/frontend/metabolic/supabase-messages.js
+          node --check LIVYA_HIMS/frontend/metabolic/supabase-persistence.js
+          node --check LIVYA_HIMS/frontend/metabolic/supabase-storage.js
+          node --check LIVYA_HIMS/frontend/metabolic/production-runtime.js
+          node --check LIVYA_HIMS/frontend/metabolic/production-hardening.js
+          node --check LIVYA_HIMS/frontend/metabolic/production-files-persistence.js
+          node --check LIVYA_HIMS/frontend/metabolic/production-message-receipts.js
+          node --check LIVYA_HIMS/frontend/metabolic/admin-access.js
+          node -e "JSON.parse(require('fs').readFileSync('LIVYA_HIMS/frontend/client/manifest.json','utf8')); console.log('PWA manifest JSON valid')"
+
       - name: Commit synchronized module
         shell: bash
         run: |
