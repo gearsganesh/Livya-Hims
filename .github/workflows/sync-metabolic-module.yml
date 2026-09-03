@@ -28,7 +28,7 @@ jobs:
           rm -rf LIVYA_HIMS/frontend/metabolic
           mkdir -p LIVYA_HIMS/frontend/metabolic
           cp .metabolic-source/index.html LIVYA_HIMS/frontend/metabolic/index.html
-          for f in admin-access.js production-files-persistence.js production-hardening.js production-message-receipts.js production-runtime.js supabase-bridge.js supabase-messages.js supabase-persistence.js supabase-storage.js supabase-config.js; do cp ".metabolic-source/$f" "LIVYA_HIMS/frontend/metabolic/$f"; done
+          for f in admin-access.js hims-clinical-dashboard.js production-files-persistence.js production-hardening.js production-message-receipts.js production-runtime.js supabase-bridge.js supabase-messages.js supabase-persistence.js supabase-storage.js supabase-config.js; do cp ".metabolic-source/$f" "LIVYA_HIMS/frontend/metabolic/$f"; done
           mkdir -p LIVYA_HIMS/supabase/functions/metabolic-api
           cp .metabolic-source/supabase/functions/metabolic-api/index.ts LIVYA_HIMS/supabase/functions/metabolic-api/index.ts
           cp .metabolic-source/supabase/functions/metabolic-api/deno.json LIVYA_HIMS/supabase/functions/metabolic-api/deno.json
