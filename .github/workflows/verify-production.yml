@@ -1,0 +1,69 @@
+name: Verify HIMS production deployment
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '47 * * * *'
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Netlify production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          for attempt in $(seq 1 60); do
+            echo "Production check ${attempt}/60"
+            if curl -fsSL --max-time 20 "$base/client/" -o /tmp/client.html && \
+               grep -q 'LIVYA Client Portal' /tmp/client.html; then
+              echo 'Live client portal is reachable.'
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo 'Production deployment was not reachable after 10 minutes.'
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Verify client PWA assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          curl -fsSL --max-time 20 "$base/client/manifest.json" -o /tmp/manifest.json
+          curl -fsSL --max-time 20 "$base/client/sw.js" -o /tmp/sw.js
+          curl -fsSL --max-time 20 "$base/client/icon.svg" -o /tmp/icon.svg
+          grep -q '"start_url": "/client/"' /tmp/manifest.json
+          grep -q '"scope": "/client/"' /tmp/manifest.json
+          grep -q "serviceWorker.register('sw.js'" /tmp/client.html
+          test -s /tmp/icon.svg
+          echo 'Client PWA manifest, service worker and icon are live.'
+
+      - name: Verify Metabolic session bridge is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          curl -fsSL --max-time 20 "$base/metabolic/hims-session-bridge.js?v=1" -o /tmp/session-bridge.js
+          grep -q 'LIVYA_HIMS_SESSION' /tmp/session-bridge.js
+          grep -q 'LIVYA_METABOLIC_SESSION_ACCEPTED' /tmp/session-bridge.js
+          grep -q 'LIVYA_METABOLIC_SESSION_RELOADING' /tmp/session-bridge.js
+          echo 'Secure HIMS -> Metabolic session bridge is live.'
+
+      - name: Verify production Metabolic config
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          curl -fsSL --max-time 20 "$base/metabolic/supabase-config.js" -o /tmp/supabase-config.js
+          grep -q 'weqghrrvgunfpsvtrlkw.supabase.co' /tmp/supabase-config.js
+          if grep -q 'khtwrprihdkbpllxqlmh' /tmp/supabase-config.js; then
+            echo 'Legacy Metabolic Supabase project reference is still live.'
+            exit 1
+          fi
+          echo 'Production Metabolic client points at the HIMS Supabase project.'
