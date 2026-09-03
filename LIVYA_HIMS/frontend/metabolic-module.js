@@ -1,7 +1,7 @@
 /* LIVYA Metabolic Reset embedded module. */
 (function(){
   'use strict';
-  const APP_PATH='metabolic/index.html?v=8.3.5';
+  const APP_PATH='metabolic/index.html?v=8.3.6';
   const SUPABASE_STORAGE_KEY='sb-weqghrrvgunfpsvtrlkw-auth-token';
   let frame,overlay;
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -16,6 +16,6 @@
   async function open(){const session=await seedSession();if(!session){console.warn('[LIVYA] Metabolic Reset blocked because HIMS has no active session');return}if(!overlay){overlay=document.createElement('div');overlay.id='metabolicModuleOverlay';overlay.innerHTML='<div class="metabolic-module-frame"><div class="metabolic-module-bar"><div class="metabolic-module-title">LIVYA <span>Metabolic Reset</span></div><button class="metabolic-module-close" type="button">Close</button></div><iframe id="metabolicModuleFrame" title="LIVYA Metabolic Reset"></iframe></div>';document.body.appendChild(overlay);frame=overlay.querySelector('#metabolicModuleFrame');overlay.querySelector('.metabolic-module-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close()});frame.addEventListener('load',async()=>{await syncFrameSession();await wait(150);await applyPatientContext()})}overlay.classList.add('show');if(!frame.src||!frame.src.includes('/'+APP_PATH.split('?')[0])){frame.src=APP_PATH}else{await syncFrameSession();await applyPatientContext()}}
   function close(){if(overlay)overlay.classList.remove('show')}
   function bindLogout(){document.addEventListener('click',e=>{const logout=e.target?.closest?.('#logout');if(logout)clearFrameSession()},true)}
-  function start(){const css=document.createElement('link');css.rel='stylesheet';css.href='metabolic-module.css?v=5';document.head.appendChild(css);const font=document.createElement('link');font.rel='stylesheet';font.href='https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap';document.head.appendChild(font);ensure();bindLogout();const observer=new MutationObserver(ensure);if(document.body)observer.observe(document.body,{childList:true,subtree:true});setTimeout(()=>observer.disconnect(),180000)}
+  function start(){const css=document.createElement('link');css.rel='stylesheet';css.href='metabolic-module.css?v=6';document.head.appendChild(css);const font=document.createElement('link');font.rel='stylesheet';font.href='https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap';document.head.appendChild(font);ensure();bindLogout();const observer=new MutationObserver(ensure);if(document.body)observer.observe(document.body,{childList:true,subtree:true});setTimeout(()=>observer.disconnect(),180000)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();window.LIVYA_METABOLIC_MODULE={open,close,clearSession:clearFrameSession,applyPatientContext};
 })();
