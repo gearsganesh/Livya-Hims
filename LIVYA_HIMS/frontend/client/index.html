@@ -2,12 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="refresh" content="0;url=../metabolic/index.html?client=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#931A1D">
+  <meta name="description" content="LIVYA Client Portal">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="LIVYA">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
   <title>LIVYA Client Portal</title>
-  <script>location.replace('../metabolic/index.html?client=1');</script>
+  <style>
+    :root{color-scheme:light;--brand:#931A1D;--bg:#FAF8F8;--line:#E7DEDF;--ink:#1B1416}
+    *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg)}
+    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+    .app{width:100%;height:100dvh;min-height:100svh;display:flex;flex-direction:column}
+    .bar{flex:0 0 auto;min-height:52px;padding:8px 12px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line);padding-top:max(8px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+    .brand{display:flex;align-items:center;gap:9px;min-width:0;font-weight:700;letter-spacing:.08em;color:var(--brand)}
+    .brand img{width:28px;height:28px;flex:none}.brand span{white-space:nowrap}
+    .install{margin-left:auto;border:0;border-radius:9px;padding:8px 12px;background:var(--brand);color:#fff;font:600 13px system-ui;cursor:pointer}.install[hidden]{display:none}
+    .frame{flex:1 1 auto;width:100%;min-height:0;border:0;background:var(--bg)}
+    @media(max-width:600px){.bar{min-height:46px}.brand{font-size:13px}.brand img{width:24px;height:24px}.install{padding:7px 10px;font-size:12px}}
+  </style>
 </head>
 <body>
-  <p>Opening LIVYA Client Portal…</p>
+  <main class="app">
+    <header class="bar"><div class="brand"><img src="icon.svg" alt="LIVYA"><span>LIVYA CLIENT PORTAL</span></div><button id="install" class="install" type="button" hidden>Install app</button></header>
+    <iframe class="frame" src="../metabolic/index.html" title="LIVYA Client Portal" allow="camera; microphone; clipboard-read; clipboard-write"></iframe>
+  </main>
+  <script>
+    if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:'/client/'}).catch(()=>{});
+    let deferredPrompt;const install=document.getElementById('install');
+    window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;install.hidden=false});
+    install.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;install.hidden=true});
+    window.addEventListener('appinstalled',()=>{install.hidden=true;deferredPrompt=null});
+  </script>
 </body>
 </html>
