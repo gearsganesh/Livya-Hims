@@ -27,8 +27,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # Rebuild the vendored frontend from scratch so stale files can never survive.
           rm -rf LIVYA_HIMS/frontend/metabolic
           mkdir -p LIVYA_HIMS/frontend/metabolic
 
@@ -36,6 +34,7 @@ jobs:
           for f in \
             admin-access.js \
             hims-clinical-dashboard.js \
+            hims-session-bridge.js \
             production-files-persistence.js \
             production-hardening.js \
             production-message-receipts.js \
@@ -49,33 +48,20 @@ jobs:
             cp ".metabolic-source/$f" "LIVYA_HIMS/frontend/metabolic/$f"
           done
 
-          # Rebuild the vendored Edge Function directory from scratch too.
           rm -rf LIVYA_HIMS/supabase/functions/metabolic-api
           mkdir -p LIVYA_HIMS/supabase/functions/metabolic-api
           cp .metabolic-source/supabase/functions/metabolic-api/index.ts LIVYA_HIMS/supabase/functions/metabolic-api/index.ts
           cp .metabolic-source/supabase/functions/metabolic-api/deno.json LIVYA_HIMS/supabase/functions/metabolic-api/deno.json
 
-          # Force the vendored browser client to the current production HIMS project.
           python3 - <<'PY'
           from pathlib import Path
           import re
-
           p = Path('LIVYA_HIMS/frontend/metabolic/supabase-config.js')
           s = p.read_text()
-          s = re.sub(
-              r"const SUPABASE_DIRECT_URL\s*=\s*['\"][^'\"]+['\"];",
-              "const SUPABASE_DIRECT_URL = 'https://weqghrrvgunfpsvtrlkw.supabase.co';",
-              s,
-          )
-          s = re.sub(
-              r"publishableKey:\s*['\"][^'\"]+['\"]",
-              "publishableKey: 'sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV'",
-              s,
-          )
+          s = re.sub(r"const SUPABASE_DIRECT_URL\s*=\s*['\"][^'\"]+['\"]?;", "const SUPABASE_DIRECT_URL = 'https://weqghrrvgunfpsvtrlkw.supabase.co';", s)
+          s = re.sub(r"publishableKey:\s*['\"][^'\"]+['\"]", "publishableKey: 'sb_publishable_DWdn7pbFd3kll2rbDmPkpQ_pH80mxTV'", s)
           p.write_text(s)
           PY
-
-          # The source repository's build/development files are intentionally NOT copied.
           rm -rf .metabolic-source
 
       - name: Remove obsolete HIMS deployment leftovers
@@ -104,16 +90,17 @@ jobs:
           Database: production reconciliation migrations are deployed in the HIMS Supabase project.
           Scheduled synchronization: hourly, plus manual and HIMS push triggers.
           Stale vendored Metabolic files are removed before every sync.
+          HIMS session handoff bridge is included and transfers the active session only through same-origin postMessage.
           EOF
 
       - name: Verify production allowlist
         shell: bash
         run: |
           set -euo pipefail
-
           expected_frontend=(
             admin-access.js
             hims-clinical-dashboard.js
+            hims-session-bridge.js
             index.html
             production-files-persistence.js
             production-hardening.js
@@ -125,20 +112,15 @@ jobs:
             supabase-persistence.js
             supabase-storage.js
           )
-
           expected_backend=(index.ts deno.json)
-
           mapfile -t actual_frontend < <(find LIVYA_HIMS/frontend/metabolic -maxdepth 1 -type f -printf '%f\n' | sort)
           mapfile -t actual_backend < <(find LIVYA_HIMS/supabase/functions/metabolic-api -maxdepth 1 -type f -printf '%f\n' | sort)
-
           printf '%s\n' "${expected_frontend[@]}" | sort > /tmp/expected_frontend
           printf '%s\n' "${actual_frontend[@]}" | sort > /tmp/actual_frontend
           printf '%s\n' "${expected_backend[@]}" | sort > /tmp/expected_backend
           printf '%s\n' "${actual_backend[@]}" | sort > /tmp/actual_backend
-
           diff -u /tmp/expected_frontend /tmp/actual_frontend
           diff -u /tmp/expected_backend /tmp/actual_backend
-
           ! grep -R -n -E 'khtwrprihdkbpllxqlmh|H0-yQ7PV-Xqohz-nKFWIYA_bGew0c5q' LIVYA_HIMS/frontend/metabolic LIVYA_HIMS/supabase/functions/metabolic-api || true
 
       - name: Commit synchronized module
@@ -146,7 +128,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898282+users.noreply.github.com'
           git add LIVYA_HIMS/frontend/metabolic LIVYA_HIMS/supabase/functions/metabolic-api LIVYA_HIMS/METABOLIC_SYNC.txt LIVYA_HIMS/frontend
           if git diff --cached --quiet; then echo 'No Metabolic synchronization changes.'; exit 0; fi
           git commit -m 'chore: sync Metabolic Reset production files'
