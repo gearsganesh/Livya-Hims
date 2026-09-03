@@ -55,6 +55,17 @@ jobs:
           grep -q 'LIVYA_METABOLIC_SESSION_RELOADING' /tmp/session-bridge.js
           echo 'Secure HIMS -> Metabolic session bridge is live.'
 
+      - name: Verify authenticated UI activation is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          curl -fsSL --max-time 20 "$base/metabolic/supabase-bridge.js" -o /tmp/supabase-bridge.js
+          grep -q 'backend.hydrate = hydrate' /tmp/supabase-bridge.js
+          grep -q 'activateAuthenticatedUi' /tmp/supabase-bridge.js
+          grep -q 'window.showApp' /tmp/supabase-bridge.js
+          echo 'Metabolic Supabase bridge activates the authenticated application UI.'
+
       - name: Verify latest HIMS module build is live
         shell: bash
         run: |
