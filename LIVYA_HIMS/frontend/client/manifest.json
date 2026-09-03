@@ -1,0 +1,20 @@
+{
+  "name": "LIVYA Client Portal",
+  "short_name": "LIVYA",
+  "description": "Secure LIVYA client health portal",
+  "start_url": "/client/",
+  "scope": "/client/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF8F8",
+  "theme_color": "#931A1D",
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
