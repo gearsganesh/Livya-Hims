@@ -55,6 +55,16 @@ jobs:
           grep -q 'LIVYA_METABOLIC_SESSION_RELOADING' /tmp/session-bridge.js
           echo 'Secure HIMS -> Metabolic session bridge is live.'
 
+      - name: Verify latest HIMS module build is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://hims.livyacurehub.com'
+          curl -fsSL --max-time 20 "$base/metabolic-module.js" -o /tmp/metabolic-module.js
+          grep -q "metabolic/index.html?v=8.3.7" /tmp/metabolic-module.js
+          grep -q "metabolic/hims-session-bridge.js?v=1" /tmp/metabolic-module.js
+          echo 'Latest HIMS -> Metabolic integration build is live.'
+
       - name: Verify production Metabolic config
         shell: bash
         run: |
