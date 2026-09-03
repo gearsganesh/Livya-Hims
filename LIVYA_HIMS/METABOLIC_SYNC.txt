@@ -6,3 +6,4 @@ The vendored browser client is forced to the production HIMS Supabase project we
 Database: production reconciliation migrations are deployed in the HIMS Supabase project.
 Scheduled synchronization: hourly, plus manual and HIMS push triggers.
 Stale vendored Metabolic files are removed before every sync.
+HIMS session handoff bridge is included and transfers the active session only through same-origin postMessage.
